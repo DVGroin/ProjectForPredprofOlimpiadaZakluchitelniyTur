@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аккаунт · Профиль</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f2ffe6 0%, #e0f2d0 30%, #d4e8c0 100%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* тёмная тема (жёлто-зелёная) — полностью переработана для читаемости */
+        body.dark-theme {
+            background: linear-gradient(145deg, #1f3a1f 0%, #2b4a2b 40%, #1a3a2a 100%);
+        }
+
+        body.dark-theme .main-card {
+            background: rgba(20, 35, 20, 0.9);
+            border-color: #5f9f4f;
+        }
+
+        /* убираем белые прямоугольники, делаем прозрачный фон */
+        body.dark-theme .profile-field input {
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 1px solid #7fb06f !important;
+            border-radius: 0 !important;
+            padding: 12px 0 8px 0 !important;
+            color: #ffffff !important;
+            font-weight: 400;
+        }
+
+        body.dark-theme .profile-field input[readonly] {
+            border-bottom: 1px dashed #7fb06f !important;
+            color: #e0f0d0 !important;
+            opacity: 0.9;
+            background: transparent !important;
+        }
+
+        body.dark-theme .profile-field label {
+            color: #c0f0a0 !important;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        body.dark-theme .field-hint {
+            color: #b0e0a0 !important;
+            opacity: 0.9;
+        }
+
+        body.dark-theme .edit-button {
+            background: #2b5a2b;
+            border: 1px solid #8fc07f;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        body.dark-theme .edit-button:hover {
+            background: #3f6f3f;
+        }
+
+        body.dark-theme .admin-button {
+            background: #5a4a2b;
+            border: 1px solid #e0c07f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .admin-button:hover {
+            background: #7a6035;
+        }
+
+        body.dark-theme .theme-switch {
+            background: #2b462b;
+            border-color: #8fc07f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .footer-info {
+            background: rgba(35, 60, 35, 0.8);
+            border-color: #7fb06f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .page-title {
+            color: #c0f0a0;
+        }
+
+        body.dark-theme .page-sub {
+            color: #a0d090;
+        }
+
+        body.dark-theme .profile-card {
+            background: rgba(30, 50, 30, 0.5);
+            border-color: #5f9f4f;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 245, 0.7);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 700px;
+            border-radius: 56px;
+            padding: 2.5rem 2.5rem;
+            box-shadow: 0 20px 40px -10px rgba(120, 140, 60, 0.25);
+            border: 1px solid rgba(160, 200, 100, 0.4);
+            position: relative;
+        }
+
+        /* переключатель темы */
+        .theme-switch {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            background: #ffffff;
+            border: 1px solid #aacf7e;
+            border-radius: 60px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4f7a3a;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(120, 160, 60, 0.15);
+        }
+
+        .theme-switch:hover {
+            background: #ebffd9;
+        }
+
+        .theme-switch svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* заголовок */
+        .page-header {
+            margin-bottom: 2.5rem;
+            margin-top: 1rem;
+            text-align: left;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            letter-spacing: -0.5px;
+        }
+
+        .page-sub {
+            font-size: 1rem;
+            color: #6f9a4f;
+            margin-top: 0.3rem;
+        }
+
+        /* карточка профиля */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 48px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .profile-field label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3f6b2b;
+            margin-left: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* светлая тема — оставляем как было (с рамками) */
+        .profile-field input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #b8d99c;
+            border-radius: 40px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            color: #2b4a1f;
+            outline: none;
+            transition: 0.15s;
+            width: 100%;
+        }
+
+        .profile-field input:focus {
+            border-color: #7fb06f;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(140, 180, 70, 0.2);
+        }
+
+        .profile-field input[readonly] {
+            background: rgba(220, 240, 200, 0.3);
+            border-color: #c0d8a0;
+            color: #5a734a;
+            cursor: not-allowed;
+        }
+
+        .field-hint {
+            font-size: 0.8rem;
+            color: #7f9f6f;
+            margin-left: 1rem;
+        }
+
+        /* кнопки действий */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .edit-button {
+            background: #ebffd9;
+            border: 1px solid #9fc97f;
+            border-radius: 60px;
+            padding: 12px 32px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-button:hover {
+            background: #d8f0c0;
+            transform: scale(1.02);
+        }
+
+        .edit-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .admin-button {
+            background: #fff2d9;
+            border: 1px solid #e0c07f;
+            border-radius: 60px;
+            padding: 12px 32px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #8f6f3a;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .admin-button:hover {
+            background: #ffe6b8;
+            transform: scale(1.02);
+        }
+
+        .admin-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* информация об авторах */
+        .footer-info {
+            background: rgba(255, 255, 245, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 60px;
+            padding: 0.7rem 2rem;
+            text-align: center;
+            color: #4f7a3a;
+            font-size: 0.9rem;
+            width: fit-content;
+            margin: 2rem auto 0 auto;
+        }
+
+        /* адаптив */
+        @media (max-width: 500px) {
+            .main-card {
+                padding: 2rem 1.2rem;
+            }
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-button, .edit-button {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <!-- Переключатель темы -->
+        <div class="theme-switch" id="themeToggle">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
+                <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" />
+                <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" />
+                <line x1="4" y1="4" x2="6" y2="6" stroke="currentColor" />
+                <line x1="18" y1="18" x2="20" y2="20" stroke="currentColor" />
+                <line x1="2" y1="12" x2="4" y2="12" stroke="currentColor" />
+                <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" />
+                <line x1="4" y1="20" x2="6" y2="18" stroke="currentColor" />
+                <line x1="18" y1="6" x2="20" y2="4" stroke="currentColor" />
+            </svg>
+            <span id="themeText">Светлая</span>
+        </div>
+
+        <!-- Заголовок страницы -->
+        <div class="page-header">
+            <div class="page-title">👤 аккаунт</div>
+            <div class="page-sub">просмотр и редактирование профиля</div>
+        </div>
+
+        <!-- Карточка профиля -->
+        <div class="profile-card">
+            <div class="profile-fields">
+                <!-- Имя (редактируемое) -->
+                <div class="profile-field">
+                    <label>Имя</label>
+                    <input type="text" id="firstName" value="Иван" placeholder="Имя">
+                </div>
+
+                <!-- Фамилия (редактируемое) -->
+                <div class="profile-field">
+                    <label>Фамилия</label>
+                    <input type="text" id="lastName" value="Петров" placeholder="Фамилия">
+                </div>
+
+                <!-- Логин (только для чтения) -->
+                <div class="profile-field">
+                    <label>Логин</label>
+                    <input type="text" id="login" value="ivan_p" readonly>
+                    <div class="field-hint">логин не может быть изменён</div>
+                </div>
+
+                <!-- Роль (только для чтения) -->
+                <div class="profile-field">
+                    <label>Роль</label>
+                    <input type="text" id="role" value="пользователь" readonly>
+                </div>
+
+                <!-- Email (редактируемый) -->
+                <div class="profile-field">
+                    <label>Email</label>
+                    <input type="email" id="email" value="ivan@example.com" placeholder="email">
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <!-- Кнопка сохранения/редактирования -->
+                <button class="edit-button" id="saveButton" onclick="alert('Данные сохранены (демо)')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke="currentColor" fill="none" stroke-linecap="round"/>
+                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" stroke="currentColor" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <span>Сохранить изменения</span>
+                </button>
+
+                <!-- Кнопка перехода в админ-панель -->
+                <button class="admin-button" onclick="window.location.href='admin.html'">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="2" ry="2" stroke="currentColor" fill="none"/>
+                        <line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-linecap="round"/>
+                        <line x1="8" y1="13" x2="12" y2="13" stroke="currentColor" stroke-linecap="round"/>
+                    </svg>
+                    <span>Перейти в админ-панель</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Информация об авторах -->
+        <div class="footer-info">
+            👥 Иванов И.И., Петров П.П., Сидоров С.С. · группа XYZ-22
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeText = document.getElementById('themeText');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeText.innerText = 'Тёмная';
+            } else {
+                themeText.innerText = 'Светлая';
+            }
+
+            function switchTheme() {
+                if (body.classList.contains('dark-theme')) {
+                    body.classList.remove('dark-theme');
+                    themeText.innerText = 'Светлая';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-theme');
+                    themeText.innerText = 'Тёмная';
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            themeToggle.addEventListener('click', switchTheme);
+        })();
+    </script>
+</body>
+</html>
