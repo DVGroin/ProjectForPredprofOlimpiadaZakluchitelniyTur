@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h2 class="mb-3">Вход в систему</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+    </div>
+<<<<<<< HEAD
+</div>
+{% endblock %}
+=======
+
+    <!-- ФИО в самом низу страницы (за пределами карточки) -->
+    <div class="fio-bottom">
+            Горин Д В, Гусев М А
+    </div>
+
+    <script>
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeText = document.getElementById('themeText');
+            const body = document.body;
+
+            // проверяем сохранённую тему в localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeText.innerText = 'Тёмная';
+            } else {
+                themeText.innerText = 'Светлая';
+            }
+
+            // функция переключения темы
+            function switchTheme() {
+                if (body.classList.contains('dark-theme')) {
+                    body.classList.remove('dark-theme');
+                    themeText.innerText = 'Светлая';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-theme');
+                    themeText.innerText = 'Тёмная';
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            themeToggle.addEventListener('click', switchTheme);
+
+            // анимация полей
+            const inputs = document.querySelectorAll('.input-field');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.style.transform = 'scale(1.01)';
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
+>>>>>>> bdac188db245451a6c5ab8b1bfd19327ffc49526

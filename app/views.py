@@ -19,14 +19,15 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from .models import Profile
-'''from .forms import UserCreationForm
-from tensorflow.keras.models import load_model
+from .forms import UserCreationForm
+#from tensorflow.keras.models import load_model
 import plotly.graph_objs as go
 import plotly.utils
 
 # Загрузка обученной модели и данных
 BASE_DIR = settings.BASE_DIR
-model = load_model(os.path.join(BASE_DIR, 'alien_signal_model.h5'))
+'''
+#model = load_model(os.path.join(BASE_DIR, 'alien_signal_model.h5'))
 history = np.load(os.path.join(BASE_DIR, 'history.npy'), allow_pickle=True).item()
 class_dist = np.load(os.path.join(BASE_DIR, 'class_distribution.npy'), allow_pickle=True).item()
 valid_class_dist = np.load(os.path.join(BASE_DIR, 'valid_class_dist.npy'), allow_pickle=True).item()
@@ -35,7 +36,8 @@ preproc_params = np.load(os.path.join(BASE_DIR, 'preproc_params.npy'), allow_pic
 max_length = preproc_params['max_length']
 mean = preproc_params['mean']
 std = preproc_params['std']
-
+'''
+'''
 def preprocess_audio(audio):
     """Функция предобработки аудио (должна совпадать с использованной при обучении)"""
     if len(audio) > max_length:
@@ -43,9 +45,9 @@ def preprocess_audio(audio):
     else:
         audio = np.pad(audio, (0, max_length - len(audio)))
     return audio
-
+'''
 # Представления
-
+'''
 class CustomLoginView(LoginView):
     template_name = 'login.html'
 
@@ -172,7 +174,7 @@ def user_list(request):
     """Список пользователей для администратора (необязательно, но удобно)"""
     users = User.objects.filter(profile__role='user').select_related('profile')
     return render(request, 'user_list.html', {'users': users})
-
+'''
 
 
 # Create your views here.
@@ -199,7 +201,7 @@ def upload_audio(request):
     
     # GET-запрос — показываем форму
     return render(request, 'upload_audio.html')
-'''
+
 
 class UserCreationForm(forms.Form):
     username = forms.CharField(max_length=150, label='Логин')

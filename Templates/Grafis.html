@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Графики · Аналитика</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f2ffe6 0%, #e0f2d0 30%, #d4e8c0 100%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* тёмная тема */
+        body.dark-theme {
+            background: linear-gradient(145deg, #1f3a1f 0%, #2b4a2b 40%, #1a3a2a 100%);
+        }
+
+        body.dark-theme .main-card {
+            background: rgba(20, 35, 20, 0.9);
+            border-color: #5f9f4f;
+        }
+
+        body.dark-theme .chart-card {
+            background: rgba(30, 50, 30, 0.5);
+            border-color: #5f9f4f;
+            backdrop-filter: blur(4px);
+        }
+
+        body.dark-theme .chart-title {
+            color: #d0f0c0;
+        }
+
+        body.dark-theme .chart-title svg {
+            stroke: #b0e8a0;
+        }
+
+        body.dark-theme .chart-placeholder {
+            background: transparent;
+            border: 1px solid #5f9f4f;
+            color: #e0f0d0;
+        }
+
+        body.dark-theme .mock-line {
+            border-color: #8fc07f;
+            background: linear-gradient(90deg, transparent, rgba(140, 200, 100, 0.15));
+        }
+
+        body.dark-theme .chart-note {
+            color: #c0e8b0;
+        }
+
+        /* ВСЕ КАРТОЧКИ ОДИНАКОВЫЕ — дизайн единый */
+        .main-card {
+            background: rgba(255, 255, 245, 0.7);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 56px;
+            padding: 2.5rem 2.5rem;
+            box-shadow: 0 20px 40px -10px rgba(120, 140, 60, 0.25);
+            border: 1px solid rgba(160, 200, 100, 0.4);
+            position: relative;
+        }
+
+        /* переключатель темы */
+        .theme-switch {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            background: #ffffff;
+            border: 1px solid #aacf7e;
+            border-radius: 60px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4f7a3a;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(120, 160, 60, 0.15);
+        }
+
+        .theme-switch:hover {
+            background: #ebffd9;
+        }
+
+        .theme-switch svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* заголовок */
+        .page-header {
+            margin-bottom: 2.5rem;
+            margin-top: 1rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            letter-spacing: -0.5px;
+        }
+
+        .page-sub {
+            font-size: 1rem;
+            color: #6f9a4f;
+            margin-top: 0.3rem;
+        }
+
+        /* сетка графиков */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.8rem;
+            margin: 2rem 0;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 40px;
+            padding: 1.5rem 1.2rem;
+            transition: 0.15s;
+        }
+
+        .chart-card:hover {
+            background: rgba(235, 255, 215, 0.6);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        .chart-placeholder {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid #c0e0a0;
+            border-radius: 32px;
+            padding: 1rem;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            position: relative;
+            color: #5a8f4a;
+        }
+
+        /* имитация линейного графика (общая) */
+        .mock-line-chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .mock-line {
+            position: absolute;
+            bottom: 15%;
+            left: 5%;
+            width: 90%;
+            height: 70%;
+            border: 2px solid #8fc07f;
+            border-radius: 2px;
+            background: linear-gradient(90deg, transparent, rgba(140, 200, 100, 0.1));
+            clip-path: polygon(0% 70%, 12% 40%, 25% 60%, 38% 30%, 52% 45%, 68% 20%, 82% 35%, 100% 15%);
+        }
+
+        /* ----------------------------------------------- */
+        /* ТОЛЬКО ПЕРВЫЙ ГРАФИК — ЯРЧЕ САМ РИСУНОК       */
+        /* ----------------------------------------------- */
+        .chart-card:first-child .mock-line {
+            border-color: #006400 !important;          /* тёмно-зелёный на светлой */
+            border-width: 3px !important;
+            background: linear-gradient(90deg, transparent, rgba(0, 150, 0, 0.25));
+            filter: drop-shadow(0 0 6px rgba(0, 150, 0, 0.5));
+        }
+
+        body.dark-theme .chart-card:first-child .mock-line {
+            border-color: #b0ffa0 !important;          /* яркий салатовый на тёмной */
+            border-width: 3px !important;
+            background: linear-gradient(90deg, transparent, rgba(180, 255, 150, 0.4));
+            filter: drop-shadow(0 0 10px #a0ffa0);
+        }
+
+        /* подписи внутри графика тоже чуть ярче (но необязательно) */
+        .chart-card:first-child .chart-placeholder div[style*="position: absolute"] {
+            font-weight: 600;
+            color: #006400;
+        }
+
+        body.dark-theme .chart-card:first-child .chart-placeholder div[style*="position: absolute"] {
+            color: #ffffff;
+            text-shadow: 0 0 6px #a0ffa0;
+        }
+        /* ----------------------------------------------- */
+
+        /* имитация столбцов */
+        .mock-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            width: 100%;
+            padding: 10px 10px;
+        }
+
+        .mock-bar {
+            width: 30px;
+            background: linear-gradient(to top, #aad68f, #c0e8a0);
+            border-radius: 16px 16px 8px 8px;
+            height: calc(30% + 6% * var(--h));
+            min-height: 20px;
+            border: 1px solid #7fb06f;
+        }
+
+        /* маленькие подписи */
+        .chart-note {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            color: #6f9a4f;
+            opacity: 0.8;
+        }
+
+        /* дополнительный блок с пояснением */
+        .info-block {
+            background: rgba(200, 220, 160, 0.2);
+            border: 1px solid #c0e0a0;
+            border-radius: 60px;
+            padding: 1rem 2rem;
+            margin: 2rem 0 1rem 0;
+            color: #3f6b2b;
+            font-size: 0.95rem;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+
+        /* информация об авторах */
+        .footer-info {
+            background: rgba(255, 255, 245, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 60px;
+            padding: 0.7rem 2rem;
+            text-align: center;
+            color: #4f7a3a;
+            font-size: 0.9rem;
+            width: fit-content;
+            margin: 2rem auto 0 auto;
+        }
+
+        /* адаптив */
+        @media (max-width: 800px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-card {
+                padding: 2rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <!-- Переключатель темы -->
+        <div class="theme-switch" id="themeToggle">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
+                <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" />
+                <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" />
+                <line x1="4" y1="4" x2="6" y2="6" stroke="currentColor" />
+                <line x1="18" y1="18" x2="20" y2="20" stroke="currentColor" />
+                <line x1="2" y1="12" x2="4" y2="12" stroke="currentColor" />
+                <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" />
+                <line x1="4" y1="20" x2="6" y2="18" stroke="currentColor" />
+                <line x1="18" y1="6" x2="20" y2="4" stroke="currentColor" />
+            </svg>
+            <span id="themeText">Светлая</span>
+        </div>
+
+        <!-- Заголовок -->
+        <div class="page-header">
+            <div class="page-title">📊 графики и аналитика</div>
+            <div class="page-sub">метрики обучения и распределение классов</div>
+        </div>
+
+        <!-- Сетка с четырьмя графиками -->
+        <div class="charts-grid">
+            <!-- График 1: Точность на валидации по эпохам (только рисунок яркий) -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-linecap="round"/>
+                        <line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-linecap="round"/>
+                        <line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-linecap="round"/>
+                    </svg>
+                    Точность на валидации по эпохам
+                </div>
+                <div class="chart-placeholder">
+                    <div class="mock-line-chart">
+                        <div class="mock-line"></div>
+                        <div style="position: absolute; bottom: 2px; left: 10px; font-size: 0.7rem;">эпоха</div>
+                        <div style="position: absolute; top: 5px; right: 10px; font-size: 0.7rem;">accuracy</div>
+                    </div>
+                </div>
+                <div class="chart-note">↑ 94.2% на последней эпохе</div>
+            </div>
+
+            <!-- График 2: Распределение классов в обучающем наборе -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="10" width="4" height="10" stroke="currentColor" fill="none"/>
+                        <rect x="9" y="6" width="4" height="14" stroke="currentColor" fill="none"/>
+                        <rect x="15" y="2" width="4" height="18" stroke="currentColor" fill="none"/>
+                    </svg>
+                    Распределение классов (обучение)
+                </div>
+                <div class="chart-placeholder">
+                    <div class="mock-bars">
+                        <div class="mock-bar" style="height: 90px; --h:9;"></div>
+                        <div class="mock-bar" style="height: 45px; --h:4;"></div>
+                        <div class="mock-bar" style="height: 120px; --h:12;"></div>
+                        <div class="mock-bar" style="height: 60px; --h:6;"></div>
+                        <div class="mock-bar" style="height: 80px; --h:8;"></div>
+                        <div class="mock-bar" style="height: 40px; --h:3;"></div>
+                        <div class="mock-bar" style="height: 70px; --h:7;"></div>
+                    </div>
+                </div>
+                <div class="chart-note">24 класса, максимум — класс #7 (120 записей)</div>
+            </div>
+
+            <!-- График 3: Точность для каждой записи тестового набора -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+                        <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-linecap="round"/>
+                    </svg>
+                    Точность по записям (тест)
+                </div>
+                <div class="chart-placeholder">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; gap: 3px; padding: 0 10px; width: 100%; flex-wrap: wrap;">
+                        <div style="background: #8fc07f; width: 6px; height: 95%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 82%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 68%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 91%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 77%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 84%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 96%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 73%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 89%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 62%; border-radius: 4px;"></div>
+                        <div style="background: #8fc07f; width: 6px; height: 94%; border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div class="chart-note">средняя точность 91.4% на тесте</div>
+            </div>
+
+            <!-- График 4: Топ-5 классов в валидационном наборе -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="12 2 15 9 22 9 16 14 19 22 12 17 5 22 8 14 2 9 9 9 12 2" stroke="currentColor" fill="none"/>
+                    </svg>
+                    Топ-5 классов (валидация)
+                </div>
+                <div class="chart-placeholder" style="flex-direction: column; align-items: flex-start; justify-content: center; gap: 12px;">
+                    <div style="width: 100%; display: flex; align-items: center; gap: 8px;">
+                        <span style="min-width: 35px;">#12</span>
+                        <div style="background: #8fc07f; height: 16px; width: 80%; border-radius: 20px;"></div>
+                        <span>24%</span>
+                    </div>
+                    <div style="width: 100%; display: flex; align-items: center; gap: 8px;">
+                        <span style="min-width: 35px;">#07</span>
+                        <div style="background: #8fc07f; height: 16px; width: 65%; border-radius: 20px;"></div>
+                        <span>18%</span>
+                    </div>
+                    <div style="width: 100%; display: flex; align-items: center; gap: 8px;">
+                        <span style="min-width: 35px;">#03</span>
+                        <div style="background: #8fc07f; height: 16px; width: 50%; border-radius: 20px;"></div>
+                        <span>14%</span>
+                    </div>
+                    <div style="width: 100%; display: flex; align-items: center; gap: 8px;">
+                        <span style="min-width: 35px;">#19</span>
+                        <div style="background: #8fc07f; height: 16px; width: 40%; border-radius: 20px;"></div>
+                        <span>11%</span>
+                    </div>
+                    <div style="width: 100%; display: flex; align-items: center; gap: 8px;">
+                        <span style="min-width: 35px;">#05</span>
+                        <div style="background: #8fc07f; height: 16px; width: 30%; border-radius: 20px;"></div>
+                        <span>9%</span>
+                    </div>
+                </div>
+                <div class="chart-note">на валидационной выборке</div>
+            </div>
+        </div>
+
+        <!-- Пояснительный блок -->
+        <div class="info-block">
+            ⚡ Графики обновляются после каждой эпохи обучения. Данные загружены из валидационного набора.
+        </div>
+
+        <!-- Информация об авторах -->
+        <div class="footer-info">            
+            Горин Д В, Гусев М А
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeText = document.getElementById('themeText');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeText.innerText = 'Тёмная';
+            } else {
+                themeText.innerText = 'Светлая';
+            }
+
+            function switchTheme() {
+                if (body.classList.contains('dark-theme')) {
+                    body.classList.remove('dark-theme');
+                    themeText.innerText = 'Светлая';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-theme');
+                    themeText.innerText = 'Тёмная';
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            themeToggle.addEventListener('click', switchTheme);
+        })();
+    </script>
+</body>
+</html>

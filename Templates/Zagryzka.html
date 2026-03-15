@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка данных · Аудиосигналы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f2ffe6 0%, #e0f2d0 30%, #d4e8c0 100%);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* тёмная тема */
+        body.dark-theme {
+            background: linear-gradient(145deg, #1f3a1f 0%, #2b4a2b 40%, #1a3a2a 100%);
+        }
+
+        body.dark-theme .main-card {
+            background: rgba(20, 35, 20, 0.9);
+            border-color: #5f9f4f;
+        }
+
+        body.dark-theme .upload-card, 
+        body.dark-theme .files-card {
+            background: rgba(30, 50, 30, 0.5);
+            border-color: #5f9f4f;
+            backdrop-filter: blur(4px);
+        }
+
+        body.dark-theme .section-title {
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        body.dark-theme .drop-zone {
+            background: rgba(20, 40, 20, 0.6);
+            border-color: #7fb06f;
+            color: #e0f0d0;
+        }
+
+        body.dark-theme .drop-zone:hover {
+            background: rgba(40, 70, 40, 0.7);
+            border-color: #a0e0a0;
+        }
+
+        body.dark-theme .file-item {
+            background: rgba(30, 55, 30, 0.7);
+            border-color: #5f9f4f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .file-name {
+            color: #ffffff;
+        }
+
+        body.dark-theme .file-meta {
+            color: #c0e0a0;
+        }
+
+        body.dark-theme .play-button {
+            background: #2b5a2b;
+            border-color: #7fb06f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .play-button:hover {
+            background: #3f6f3f;
+        }
+
+        body.dark-theme .delete-button {
+            background: #5a2b2b;
+            border-color: #b06f6f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .delete-button:hover {
+            background: #7f3f3f;
+        }
+
+        body.dark-theme .theme-switch {
+            background: #2b462b;
+            border-color: #8fc07f;
+            color: #ffffff;
+        }
+
+        body.dark-theme .footer-info {
+            background: rgba(35, 60, 35, 0.8);
+            border-color: #7fb06f;
+            color: #ffffff;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 245, 0.7);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 56px;
+            padding: 2.5rem 2.5rem;
+            box-shadow: 0 20px 40px -10px rgba(120, 140, 60, 0.25);
+            border: 1px solid rgba(160, 200, 100, 0.4);
+            position: relative;
+        }
+
+        /* переключатель темы */
+        .theme-switch {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            background: #ffffff;
+            border: 1px solid #aacf7e;
+            border-radius: 60px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4f7a3a;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(120, 160, 60, 0.15);
+        }
+
+        .theme-switch:hover {
+            background: #ebffd9;
+        }
+
+        .theme-switch svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* заголовок */
+        .page-header {
+            margin-bottom: 2.5rem;
+            margin-top: 1rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            letter-spacing: -0.5px;
+        }
+
+        .page-sub {
+            font-size: 1rem;
+            color: #6f9a4f;
+            margin-top: 0.3rem;
+        }
+
+        /* сетка: загрузка + файлы */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .upload-card, .files-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 40px;
+            padding: 1.8rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #3f6b2b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title svg {
+            width: 26px;
+            height: 26px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        /* зона загрузки */
+        .drop-zone {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px dashed #aacf7e;
+            border-radius: 32px;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone:hover {
+            background: rgba(220, 255, 200, 0.7);
+            border-color: #5f9f4f;
+        }
+
+        .drop-zone svg {
+            width: 48px;
+            height: 48px;
+            stroke: #4f7a3a;
+            margin-bottom: 0.8rem;
+        }
+
+        .drop-zone-text {
+            font-size: 1.1rem;
+            color: #2b5a2b;
+            margin-bottom: 0.3rem;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.9rem;
+            color: #6f9a4f;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* информация о формате */
+        .format-info {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            color: #4f7a3a;
+            font-size: 0.9rem;
+        }
+
+        .format-badge {
+            background: rgba(160, 200, 100, 0.2);
+            border: 1px solid #aacf7e;
+            border-radius: 40px;
+            padding: 0.4rem 1rem;
+        }
+
+        /* список загруженных файлов */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.3rem;
+        }
+
+        .file-item {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid #c0e0a0;
+            border-radius: 60px;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(2px);
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #2b5a2b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .file-name svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: #5a734a;
+            display: flex;
+            gap: 1rem;
+            margin-left: 24px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .play-button {
+            background: #ffffff;
+            border: 1px solid #aacf7e;
+            border-radius: 40px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .play-button:hover {
+            background: #d8f0c0;
+            transform: scale(1.05);
+        }
+
+        .play-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #2b5a2b;
+            fill: none;
+        }
+
+        .delete-button {
+            background: #ffffff;
+            border: 1px solid #cf9f9f;
+            border-radius: 40px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .delete-button:hover {
+            background: #ffd0d0;
+            transform: scale(1.05);
+        }
+
+        .delete-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: #b34d4d;
+            fill: none;
+        }
+
+        body.dark-theme .delete-button svg {
+            stroke: #ffb0b0;
+        }
+
+        body.dark-theme .play-button svg {
+            stroke: #ffffff;
+        }
+
+        .empty-files {
+            text-align: center;
+            color: #8fa87f;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* информация об авторах */
+        .footer-info {
+            background: rgba(255, 255, 245, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid #c0e0a0;
+            border-radius: 60px;
+            padding: 0.7rem 2rem;
+            text-align: center;
+            color: #4f7a3a;
+            font-size: 0.9rem;
+            width: fit-content;
+            margin: 2rem auto 0 auto;
+        }
+
+        /* адаптив */
+        @media (max-width: 800px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-card {
+                padding: 2rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <!-- Переключатель темы -->
+        <div class="theme-switch" id="themeToggle">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
+                <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" />
+                <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" />
+                <line x1="4" y1="4" x2="6" y2="6" stroke="currentColor" />
+                <line x1="18" y1="18" x2="20" y2="20" stroke="currentColor" />
+                <line x1="2" y1="12" x2="4" y2="12" stroke="currentColor" />
+                <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" />
+                <line x1="4" y1="20" x2="6" y2="18" stroke="currentColor" />
+                <line x1="18" y1="6" x2="20" y2="4" stroke="currentColor" />
+            </svg>
+            <span id="themeText">Светлая</span>
+        </div>
+
+        <!-- Заголовок страницы -->
+        <div class="page-header">
+            <div class="page-title">📂 загрузка данных</div>
+            <div class="page-sub">аудиофайлы радиосигналов · .wav .npz</div>
+        </div>
+
+        <!-- Основная сетка: загрузка + файлы -->
+        <div class="content-grid">
+            <!-- Левая колонка: загрузка файла -->
+            <div class="upload-card">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" fill="none"/>
+                        <polyline points="17 8 12 3 7 8" stroke="currentColor" fill="none"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" fill="none"/>
+                    </svg>
+                    <span>Загрузить сигнал</span>
+                </div>
+
+                <!-- Зона drag-and-drop -->
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".wav,.npz,audio/wav" onchange="handleFiles(this.files)">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                        <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                    </svg>
+                    <div class="drop-zone-text">Перетащите файлы сюда</div>
+                    <div class="drop-zone-hint">или нажмите для выбора</div>
+                </div>
+
+                <!-- Информация о поддерживаемых форматах -->
+                <div class="format-info">
+                    <span class="format-badge">📊 .npz (наборы)</span>
+                    <span class="format-badge">🎵 .wav (аудио)</span>
+                </div>
+
+                <!-- Подсказка для демо -->
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: #6f9a4f; text-align: center;">
+                    ⚡ в демо-режиме файлы добавляются в список справа
+                </div>
+            </div>
+
+            <!-- Правая колонка: загруженные файлы -->
+            <div class="files-card">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="18" rx="2" ry="2" stroke="currentColor" fill="none"/>
+                        <line x1="9" y1="9" x2="15" y2="9" stroke="currentColor" stroke-linecap="round"/>
+                        <line x1="9" y1="13" x2="15" y2="13" stroke="currentColor" stroke-linecap="round"/>
+                        <line x1="9" y1="17" x2="13" y2="17" stroke="currentColor" stroke-linecap="round"/>
+                    </svg>
+                    <span>Загруженные записи</span>
+                </div>
+
+                <!-- Список файлов -->
+                <div class="files-list" id="filesList">
+                    <!-- Примеры для демонстрации -->
+                    <div class="file-item" data-filename="signal_alpha.wav">
+                        <div class="file-info">
+                            <div class="file-name">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M3 18v-6a9 9 0 0 1 18 0v6" stroke="currentColor" fill="none"/>
+                                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" stroke="currentColor" fill="none"/>
+                                    <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" stroke="currentColor" fill="none"/>
+                                </svg>
+                                signal_alpha.wav
+                            </div>
+                            <div class="file-meta">
+                                <span>длит. 2.4 сек</span>
+                                <span>класс: 07</span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <div class="play-button" onclick="playFile('signal_alpha.wav')">
+                                <svg viewBox="0 0 24 24">
+                                    <polygon points="5 3 19 12 5 21 5 3" stroke="currentColor" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="delete-button" onclick="deleteFile(this)">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" fill="none"/>
+                                    <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor"/>
+                                    <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item" data-filename="signal_beta.npz">
+                        <div class="file-info">
+                            <div class="file-name">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="2" y="3" width="20" height="18" rx="2" ry="2" stroke="currentColor" fill="none"/>
+                                    <line x1="9" y1="9" x2="15" y2="9" stroke="currentColor"/>
+                                    <line x1="9" y1="13" x2="15" y2="13" stroke="currentColor"/>
+                                </svg>
+                                signal_beta.npz
+                            </div>
+                            <div class="file-meta">
+                                <span>64 записи</span>
+                                <span>тестовый набор</span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <div class="play-button" onclick="playFile('signal_beta.npz')" title="npz не воспроизводится, демо">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+                                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor"/>
+                                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor"/>
+                                </svg>
+                            </div>
+                            <div class="delete-button" onclick="deleteFile(this)">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" fill="none"/>
+                                    <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor"/>
+                                    <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item" data-filename="gamma_402.wav">
+                        <div class="file-info">
+                            <div class="file-name">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M3 18v-6a9 9 0 0 1 18 0v6" stroke="currentColor" fill="none"/>
+                                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" stroke="currentColor" fill="none"/>
+                                    <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" stroke="currentColor" fill="none"/>
+                                </svg>
+                                gamma_402.wav
+                            </div>
+                            <div class="file-meta">
+                                <span>длит. 3.1 сек</span>
+                                <span>класс: 12</span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <div class="play-button" onclick="playFile('gamma_402.wav')">
+                                <svg viewBox="0 0 24 24">
+                                    <polygon points="5 3 19 12 5 21 5 3" stroke="currentColor" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="delete-button" onclick="deleteFile(this)">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" fill="none"/>
+                                    <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor"/>
+                                    <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация об авторах -->
+        <div class="footer-info">
+            Горин Д В, Гусев М А
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeText = document.getElementById('themeText');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeText.innerText = 'Тёмная';
+            } else {
+                themeText.innerText = 'Светлая';
+            }
+
+            function switchTheme() {
+                if (body.classList.contains('dark-theme')) {
+                    body.classList.remove('dark-theme');
+                    themeText.innerText = 'Светлая';
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.add('dark-theme');
+                    themeText.innerText = 'Тёмная';
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            themeToggle.addEventListener('click', switchTheme);
+
+            // Настройка drag-and-drop
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const filesList = document.getElementById('filesList');
+
+            // Предотвращение стандартного поведения браузера
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // Подсветка при наведении
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropZone.style.background = 'rgba(200, 240, 180, 0.8)';
+                dropZone.style.borderColor = '#2b8a2b';
+            }
+
+            function unhighlight() {
+                dropZone.style.background = '';
+                dropZone.style.borderColor = '';
+            }
+
+            // Обработка сброшенных файлов
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+
+            // Глобальная функция для обработки файлов
+            window.handleFiles = function(files) {
+                if (!files || files.length === 0) return;
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    addFileToList(file);
+                }
+                
+                // Очистка input для возможности повторного выбора тех же файлов
+                fileInput.value = '';
+            };
+
+            // Добавление файла в список
+            function addFileToList(file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const isWav = file.name.toLowerCase().endsWith('.wav');
+                const isNpz = file.name.toLowerCase().endsWith('.npz');
+                
+                let fileMeta = '';
+                if (isWav) {
+                    fileMeta = '<span>длит. ~2-4 сек</span><span>класс: —</span>';
+                } else if (isNpz) {
+                    fileMeta = '<span>набор данных</span><span>тестовый</span>';
+                } else {
+                    fileMeta = '<span>формат не определён</span>';
+                }
+
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">
+                            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                                ${isWav ? 
+                                    '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>' 
+                                    : '<rect x="2" y="3" width="20" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>'}
+                            </svg>
+                            ${file.name}
+                        </div>
+                        <div class="file-meta">
+                            ${fileMeta}
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <div class="play-button" onclick="playFile('${file.name}')">
+                            <svg viewBox="0 0 24 24">
+                                ${isWav ? 
+                                    '<polygon points="5 3 19 12 5 21 5 3" stroke="currentColor" fill="none"/>' 
+                                    : '<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>'}
+                            </svg>
+                        </div>
+                        <div class="delete-button" onclick="deleteFile(this)">
+                            <svg viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" fill="none"/>
+                                <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor"/>
+                                <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                
+                filesList.appendChild(fileItem);
+                
+                // Скролл вниз к новому файлу
+                filesList.scrollTop = filesList.scrollHeight;
+            }
+
+            // Глобальная функция для воспроизведения (демо)
+            window.playFile = function(filename) {
+                if (filename.endsWith('.wav')) {
+                    alert(`🎵 Воспроизведение ${filename} (демо-режим)`);
+                } else {
+                    alert(`📊 Файл данных ${filename} (не аудио, воспроизведение недоступно)`);
+                }
+            };
+
+            // Глобальная функция для удаления файла
+            window.deleteFile = function(buttonElement) {
+                const fileItem = buttonElement.closest('.file-item');
+                if (fileItem) {
+                    fileItem.remove();
+                }
+                
+                // Если список стал пустым, можно показать сообщение
+                if (filesList.children.length === 0) {
+                    filesList.innerHTML = '<div class="empty-files">Нет загруженных файлов</div>';
+                }
+            };
+        })();
+    </script>
+</body>
+</html>
