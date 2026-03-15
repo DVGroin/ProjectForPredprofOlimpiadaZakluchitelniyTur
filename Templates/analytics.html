@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Аналитика{% endblock %}
+{% block content %}
+<h2>Аналитика</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div id="accChart"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="distChart"></div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div id="topChart"></div>
+    </div>
+</div>
+
+<script>
+    var accChart = {{ acc_chart|safe }};
+    Plotly.newPlot('accChart', accChart.data, accChart.layout);
+
+    var distChart = {{ dist_chart|safe }};
+    Plotly.newPlot('distChart', distChart.data, distChart.layout);
+
+    var topChart = {{ top_chart|safe }};
+    Plotly.newPlot('topChart', topChart.data, topChart.layout);
+</script>
+{% endblock %}

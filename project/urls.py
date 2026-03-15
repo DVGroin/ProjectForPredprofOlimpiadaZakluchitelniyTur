@@ -17,9 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from app.views import test_view, upload_audio
+from app import views
 from django.http import Http404
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', test_view),
-    path('upload_audio/', upload_audio, name = 'upload_audio'),
+    #path('', test_view),
+    #path('upload_audio/', upload_audio, name = 'upload_audio'),
+    path('', views.profile, name='profile'),  # корень приложения — профиль (после логина)
+    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+    path('profile/', views.profile, name='profile'),
+    path('analytics/', views.analytics, name='analytics'),
+    path('upload/', views.upload_test, name='upload_test'),
+    path('create_user/', views.create_user, name='create_user'),
+    path('users/', views.user_list, name='user_list'),
 ]

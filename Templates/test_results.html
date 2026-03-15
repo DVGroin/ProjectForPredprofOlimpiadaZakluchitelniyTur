@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Результаты тестирования{% endblock %}
+{% block content %}
+<h2>Результаты на тестовом наборе</h2>
+<p><strong>Точность:</strong> {{ accuracy|floatformat:4 }}</p>
+<p><strong>Потери (loss):</strong> {{ loss|floatformat:4 }}</p>
+
+<div id="perSampleChart"></div>
+
+<script>
+    var perSampleChart = {{ per_sample_chart|safe }};
+    Plotly.newPlot('perSampleChart', perSampleChart.data, perSampleChart.layout);
+</script>
+
+<a href="{% url 'upload_test' %}" class="btn btn-secondary mt-3">Загрузить другой файл</a>
+{% endblock %}

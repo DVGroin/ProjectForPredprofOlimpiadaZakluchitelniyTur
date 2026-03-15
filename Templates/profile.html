@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Профиль{% endblock %}
+{% block content %}
+<h2>Профиль пользователя</h2>
+<p><strong>Логин:</strong> {{ user.username }}</p>
+<p><strong>Имя:</strong> {{ user.profile.first_name }}</p>
+<p><strong>Фамилия:</strong> {{ user.profile.last_name }}</p>
+<p><strong>Роль:</strong> {{ user.profile.get_role_display }}</p>
+{% endblock %}

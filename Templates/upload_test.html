@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Загрузка тестового набора{% endblock %}
+{% block content %}
+<h2>Загрузите тестовый набор данных (.npz)</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="test_file" class="form-label">Файл .npz</label>
+        <input class="form-control" type="file" id="test_file" name="test_file" accept=".npz" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Загрузить и проанализировать</button>
+</form>
+{% endblock %}
